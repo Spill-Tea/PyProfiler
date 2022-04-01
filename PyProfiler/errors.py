@@ -25,11 +25,11 @@
 """
 
 
-class ModeError(ValueError):
-    """Writing Mode Error"""
+class InvalidMode(ValueError):
+    """Invalid Writing Mode Error"""
     ...
 
 
-class SortingError(ValueError):
-    """Sorting Method Error"""
+class InvalidSortingMethod(ValueError):
+    """Invalid Sorting Method"""
     ...

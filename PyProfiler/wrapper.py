@@ -27,7 +27,7 @@
 from typing import Any, Callable
 from cProfile import Profile as _Profile
 
-from PyProfiler.errors import ModeError, SortingError
+from PyProfiler.errors import InvalidMode, InvalidSortingMethod
 from PyProfiler.utils import check_keyword, is_valid_mode, is_valid_sortkey, output_stats
 
 
@@ -81,9 +81,9 @@ class Profiler:
                  ) -> None:
         # Sanity Checks - Raise errors immediately (not after profiling)
         if is_valid_mode(mode) is False:
-            raise ModeError(f"Invalid Writing Method ({mode}).")
+            raise InvalidMode(f"Invalid Writing Method ({mode}).")
         if is_valid_sortkey(sortby) is False:
-            raise SortingError(f"Invalid Sorting Method ({sortby}).")
+            raise InvalidSortingMethod(f"Invalid Sorting Method ({sortby}).")
 
         self.keyword = keyword
         self.filepath = filepath
