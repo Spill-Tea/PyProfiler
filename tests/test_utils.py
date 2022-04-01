@@ -1,5 +1,6 @@
 """
-    tests/test_utils.py
+    PyProfiler
+        tests/test_utils.py
 
 """
 import pytest
@@ -7,7 +8,7 @@ import pytest
 from pstats import SortKey
 
 from PyProfiler import get_default_args
-from PyProfiler.utils import is_valid_sortkey, check_keyword
+from PyProfiler.utils import is_valid_sortkey, check_keyword, default_arg
 
 
 def example(a, b, debug):
@@ -91,7 +92,31 @@ def test_keyword(function, keyword, args, kwargs, expected):
     (example_2, dict(zip(['a', 'b', 'verbose'], [1, 2, True]))),
     (Example.magic, dict(zip(['self', 'a', 'profile'], [None, None, True]))),
     (Example.black, dict(zip(['b', 'debug'], [None, False]))),  # classmethod wrapper modifies inspection of method
-    (Example.lady, dict(zip(['a', 'profile'], [None] * 2))),
+    (Example.lady, dict(zip(['a', 'profile'], [None] * 2))),  # staticmethod does not have self (obviously)
 ])
 def test_default_values(function, expected):
     assert get_default_args(function, None) == expected
+
+
+@pytest.mark.parametrize('function, keyword, default, expected', [
+    (example, 'debug', True, True),
+    (example, 'debug',  False, False),
+    (example_2, 'verbose', True, True),
+    (example_2, 'verbose', False, True),
+    (example_2, '', True, True),
+    (example_2, '', False, False),
+    (Example.magic, 'profile', True, True),
+    (Example.magic, 'profile', False, True),
+    (Example.magic, '', True, True),
+    (Example.magic, '', False, False),
+    (Example.black, 'debug', False, False),
+    (Example.black, 'debug', True, False),
+    (Example.black, '', False, False),
+    (Example.black, '', True, True),
+    (Example.lady, 'profile', True, True),
+    (Example.lady, 'profile', False, False),
+    (Example.lady, '', True, True),
+    (Example.lady, '', False, False),
+])
+def test_default_keyvalue(function, keyword, default, expected):
+    assert default_arg(function, keyword, default) is expected
