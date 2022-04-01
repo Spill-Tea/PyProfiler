@@ -1,4 +1,9 @@
 # PyProfiler
+[![build status][buildstatus-image]][buildstatus-url]
+
+[buildstatus-image]: https://github.com/Spill-Tea/PyProfiler/actions/workflows/python-package.yml/badge.svg?branch=main
+[buildstatus-url]: https://github.com/Spill-Tea/PyProfiler/actions?query=branch%3Amain
+
 A Simple cProfiler Wrapper to debug Functions toggled by user defined Keyword Argument
 
 1. [About](#about)
