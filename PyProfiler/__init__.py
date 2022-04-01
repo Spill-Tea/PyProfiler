@@ -24,3 +24,9 @@
     SOFTWARE.
 
 """
+from wrapper import Profiler
+from utils import get_default_args
+
+
+__all__ = [i for i in dir() if not i.startswith('_')]
+__version__ = '0.1.01'

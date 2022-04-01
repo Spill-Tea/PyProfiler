@@ -28,10 +28,7 @@ from typing import Any, Callable
 from cProfile import Profile as _Profile
 
 from errors import ModeError, SortingError
-from utils import (check_keyword,
-                   is_valid_mode,
-                   is_valid_sortkey,
-                   output_stats)
+from utils import check_keyword, is_valid_mode, is_valid_sortkey, output_stats
 
 
 class Profiler:
@@ -54,7 +51,7 @@ class Profiler:
             For More Details, review the following available options:
                 https://docs.python.org/3/library/profile.html#pstats.Stats.sort_stats
     Example Useage
-        >>> from PyProfiler.wrapper import Profiler
+        >>> from PyProfiler import Profiler
         >>> @Profiler(keyword='profile')
         >>> def add(a, b, profile: bool = True):
         >>>     return a + b
