@@ -71,12 +71,26 @@ def default_arg(function: Callable, keyword: str, default: Any = None) -> Any:
 
 
 def check_keyword(function: Callable, keyword: str, *args, **kwargs):
-    """Introspection Method to retrieve value of keyword. Assumes keyword should be a boolean."""
+    """Introspection Method to retrieve value of keyword.
+    NOTE: Assumes keyword value should be a boolean (toggle).
+    Args
+        function (Callable)
+            a callable function
+        keyword (str)
+            keyword argument found in function
+        args (tuple)
+            Positional arguments delivered to function
+        kwargs (dict)
+            Keyword arguments delivered to function
+    Returns (bool | Any)
+        the bool toggle of a specific keyword if present in function.
+        NOTE: If keyword is not present as a valid argument of the function, returns False
+
+    """
     specs = getfullargspec(function)
 
     # Function must have the specified Keyword Argument
-    has_keyword = keyword in specs.args
-    if has_keyword is False:
+    if keyword not in specs.args:
         return False
 
     # If function comes from a class, eliminate the first arg
@@ -94,7 +108,7 @@ def check_keyword(function: Callable, keyword: str, *args, **kwargs):
         )
     )
 
-    return has_keyword and key_value and isinstance(key_value, bool)
+    return key_value and isinstance(key_value, bool)
 
 
 def is_valid_sortkey(value: Any) -> bool:
@@ -129,6 +143,7 @@ def is_valid_mode(value: str):
 
 
 def output_stats(profile, sorting, stream: IO = stdout) -> None:
+    """Organize and delegate Profile results as prescribed."""
     p = Stats(profile, stream=stream)
     p.sort_stats(sorting)
     p.print_stats()
