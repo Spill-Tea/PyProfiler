@@ -79,10 +79,16 @@ def check_keyword(function: Callable, keyword: str, *args, **kwargs):
     if has_keyword is False:
         return False
 
+    # If function comes from a class, eliminate the first arg
+    if specs.args[0] in ['self', 'cls']:
+        positional_args = dict(zip(specs.args[1:], args))
+    else:
+        positional_args = dict(zip(specs.args, args))
+
     # Check keyword Args --> Positional Args --> Default Values --> False
     key_value = kwargs.get(
         keyword,
-        dict(zip(specs.args, args)).get(
+        positional_args.get(
             keyword,
             default_arg(function, keyword, False)
         )

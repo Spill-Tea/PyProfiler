@@ -27,8 +27,8 @@
 from typing import Any, Callable
 from cProfile import Profile as _Profile
 
-from errors import ModeError, SortingError
-from utils import check_keyword, is_valid_mode, is_valid_sortkey, output_stats
+from PyProfiler.errors import ModeError, SortingError
+from PyProfiler.utils import check_keyword, is_valid_mode, is_valid_sortkey, output_stats
 
 
 class Profiler:
