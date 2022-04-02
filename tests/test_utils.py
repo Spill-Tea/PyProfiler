@@ -52,36 +52,56 @@ def test_sortkey(value, expected):
 
 
 @pytest.mark.parametrize('function, keyword, args, kwargs, expected', [
-    (example, 'debug', (), {'debug': True}, True),
-    (example, 'debug', (), {}, False),
-    (example, 'verbose', (), {'verbose': True}, False),
-    (example, 'debug', (), {'debug': False}, False),
-    (example, 'debug', (0, 0, True), {}, True),
-    (example, 'debug', (0, 0, False), {}, False),
-    (example_2, 'verbose', (), {}, True),
-    (example_2, 'verbose', (), {'verbose': False}, False),
-    (example_2, 'verbose', (0, 0, False), {}, False),
-    (example_2, 'verbose', (0, 0, True), {}, True),
-    (example_2, 'debug', (0, 0, True), {}, False),
-    (example_2, 'verbose', (0, 0, 1), {}, False),
-    (example_2, 'verbose', (0, 0), {'verbose': False}, False),
-    (example_2, 'verbose', (0, 0), {'verbose': 1}, False),
-    (Example().magic, 'profile', (0, True), {}, True),
-    (Example().magic, 'profile', (0, False), {}, False),
-    (Example().magic, 'profile', (0,), {}, True),
-    (Example().magic, 'profile', (), {}, True),
-    (Example().magic, 'profile', (), {'profile': True}, True),
-    (Example().magic, 'profile', (), {'profile': False}, False),
-    (Example().black, 'debug', (0, True), {}, True),
-    (Example().black, 'debug', (0, False), {}, False),
-    (Example().black, 'debug', (0,), {}, False),
-    (Example().black, 'debug', (), {'debug': False}, False),
-    (Example().lady, 'profile', (0, True), {}, True),
-    (Example().lady, 'profile', (0, False), {}, False),
-    (Example().lady, 'profile', (0,), {}, False),
-    (Example().lady, 'profile', (), {}, False),
-    (Example().lady, 'profile', (), {'profile': True}, True),
-    (Example().lady, 'profile', (), {'profile': False}, False),
+    # Function without Default Value
+    (example, 'debug', (), {'debug': True}, True),  # Keyword Arg is True
+    (example, 'debug', (0, 0, True), {}, True),  # Positional Arg is True
+
+    (example, 'debug', (0, 0, False), {}, False),  # Positional Arg is False
+    (example, 'debug', (), {}, False),  # No Default Value Specified
+    (example, 'verbose', (), {'verbose': True}, False),  # Wong Keyword (Keyword not present)
+    (example, 'debug', (), {'debug': False}, False),  # Keyword Arg is False
+
+    # Function with Default Value (True)
+    (example_2, 'verbose', (), {}, True),  # Default Value is True
+    (example_2, 'verbose', (0, 0, True), {}, True),  # Positional Arg is True
+
+    (example_2, 'verbose', (), {'verbose': False}, False),  # Keyword Arg is False
+    (example_2, 'verbose', (0, 0, False), {}, False),  # Positional Arg is False
+    (example_2, 'debug', (0, 0, True), {}, False),  # Wong Keyword (Keyword not present)
+    (example_2, 'verbose', (0, 0, 1), {}, False),  # Positional Arg is not bool
+    (example_2, 'verbose', (0, 0), {'verbose': False}, False),  # Keyword Arg is False
+    (example_2, 'verbose', (0, 0), {'verbose': 1}, False),  # Positional Arg is not bool
+
+    # Method with Default (True)
+    (Example().magic, 'profile', (0, True), {}, True),  # Positional Arg is True
+    (Example().magic, 'profile', (0,), {}, True),  # Default Value is True
+    (Example().magic, 'profile', (), {}, True),  # Default Value is True
+    (Example().magic, 'profile', (), {'profile': True}, True),  # Keyword Arg is True
+
+    (Example().magic, 'profile', (), {'profile': False}, False),  # Keyword Arg is False
+    (Example().magic, 'profile', (0, False), {}, False),  # Positional Arg is False
+    (Example().magic, 'wrong', (0, True), {}, False),  # Wong Keyword (Keyword not present)
+    (Example().magic, 'profile', (0, 1), {}, False),  # Positional Arg is not bool
+
+    # Class Method (wrapper) with Default (False)
+    (Example().black, 'debug', (0, True), {}, True),  # Positional Arg is True
+    (Example().black, 'debug', (0, ), {'debug': True}, True),  # Keyword Arg is True
+    (Example().black, 'debug', (0, False), {'debug': True}, True),  # Keyword Arg is True
+
+    (Example().black, 'debug', (0, False), {}, False),  # Positional Arg is False
+    (Example().black, 'debug', (0, 1), {}, False),  # Positional Arg is not bool
+    (Example().black, 'debug', (0,), {}, False),  # Default Value is False
+    (Example().black, 'debug', (), {'debug': False}, False),  # Keyword Arg is False
+
+    # Static Method (wrapper) without Default Value
+    (Example().lady, 'profile', (0, True), {}, True),  # Positional Arg is True
+    (Example().lady, 'profile', (), {'profile': True}, True),  # Keyword Arg is True
+
+    (Example().lady, 'profile', (0, False), {}, False),  # Positional Arg is False
+    (Example().lady, 'profile', (0,), {}, False),  # No Default Value --> False
+    (Example().lady, 'profile', (0, 1), {}, False),  # Positional Arg is not bool
+    (Example().lady, 'profile', (), {}, False),  # No Default Value --> False
+    (Example().lady, 'profile', (), {'profile': False}, False),  # Keyword Arg is False
 ])
 def test_keyword(function, keyword, args, kwargs, expected):
     assert check_keyword(function, keyword, *args, **kwargs) is expected
@@ -92,7 +112,7 @@ def test_keyword(function, keyword, args, kwargs, expected):
     (example_2, dict(zip(['a', 'b', 'verbose'], [1, 2, True]))),
     (Example.magic, dict(zip(['self', 'a', 'profile'], [None, None, True]))),
     (Example.black, dict(zip(['b', 'debug'], [None, False]))),  # classmethod wrapper modifies inspection of method
-    (Example.lady, dict(zip(['a', 'profile'], [None] * 2))),  # staticmethod does not have self (obviously)
+    (Example.lady, dict(zip(['a', 'profile'], [None] * 2))),
 ])
 def test_default_values(function, expected):
     assert get_default_args(function, None) == expected
