@@ -38,16 +38,37 @@ add(1, 2, 5, 9, 10, profile=True)  # Function is Profiled
 ### Multiple Decorators
 When a function requires multiple decorators, use this Profiler decorator
 as the bottom most layer, since its function depends on introspection of the
-intended method. Currently, the Profiler wrapper is effectively __incompatible
-with the classmethod wrapper__ since instance attributes or methods (of the
-intended class) cannot be accessed.
+intended method (i.e. make certain PyProfiler.Profile is the first wrapper).
 
 ```python
+from PyProfiler import Profiler
+
 class Example:
+    _class_attribute = []
+    def __init__(self, arg: int):
+        self.arg = arg
+
     @staticmethod
     @Profiler(keyword='debug')
-    def function(*args, debug=True):
-        return sum(*args)
+    def add(debug, *args):
+        return sum(args)
+
+    @classmethod
+    @Profiler(keyword='profile')
+    def new(cls, arg: int, profile=True):
+        cls._class_attribute.append(arg)
+        print(cls._class_attribute)
+        return cls(arg)
+
+# Show Behavior of Staticmethod
+example = Example(1)
+result = example.add(True, 10, 5, 15)  # Function is Profiled, Returns 30
+result_static = Example.add(True, 10, 5, 15)  # Still behaves as static, Returns 30
+
+# Show Behavior of ClassMethod
+example_2 = example.new(arg=2, profile=True)  # Profiled. Still accesses intended class attributes
+print(isinstance(example_2, Example))
+
 ```
 
 ### Output
@@ -55,10 +76,13 @@ The profile streams to stdout by default (when filepath = None), but can be modi
 to stream output to a file by altering the filepath attribute in the decorator. Furthermore,
 you may change how the data is output (text or binary, write or append) via the mode attribute.
 ```python
+from PyProfiler import Profiler
+
 class Example:
     @Profiler(keyword='debug', filepath='function.prof', mode='ab')
-    def function(self, *args, debug=True):
-        return sum(*args)
+    def function(self, debug, *args):
+        return sum(args)
+
 ```
 
 ## License
