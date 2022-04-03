@@ -41,8 +41,8 @@ def get_default_args(function: Callable, default: Any) -> dict:
         function (Callable): A function to inspect
         default (Any): Define a Default Value when none exists
 
-    Returns (dict):
-        A Dictionary of {args: default value} of a given function.
+    Returns:
+        (dict) A Dictionary of {arg name: arg default value} of a given function.
 
     """
     d = signature(function).parameters.items()
@@ -55,8 +55,8 @@ def default_arg(function: Callable, keyword: str, default: Any = None) -> Any:
         function (Callable): A function to inspect
         keyword (str): keyword argument to find.
         default (Any): Define a Default Value when none exists
-    Returns (Any):
-        The default value of a given keyword, from the specified function.
+    Returns:
+        (Any) The default value of a given keyword, from the specified function.
 
     NOTE: If the function does not have a given keyword argument, the default value is returned.
 
@@ -72,7 +72,6 @@ def default_arg(function: Callable, keyword: str, default: Any = None) -> Any:
 
 def check_keyword(function: Callable, keyword: str, *args, **kwargs):
     """Retrieves the value of a keyword of an intercepted function.
-    NOTE: Assumes keyword value should be a boolean (toggle).
 
     Args:
         function (Callable): a callable function
@@ -80,9 +79,12 @@ def check_keyword(function: Callable, keyword: str, *args, **kwargs):
         args (tuple): Positional argument values delivered to function
         kwargs (dict): Keyword argument values delivered to function
 
-    Returns (bool | Any):
-        the bool toggle of a specific keyword if present in function.
-        NOTE: If keyword is not present as a valid argument of the function, returns False
+    Returns:
+        (bool | Any) the bool toggle of a specific keyword if present in function.
+
+    Notes:
+        - If keyword is not present as a valid argument of the function, returns False
+        - Assumes the keyword value should be a boolean (toggle).
 
     """
     specs = getfullargspec(function)
@@ -114,10 +116,13 @@ def is_valid_sortkey(value: Any) -> bool:
     """Tests if the value is a valid Sorting Method accepted by cProfile and pstats Stats libraries.
 
     Args:
-        value: (str | pstats.SortKey)
+        value (str | pstats.SortKey): method used to sort profile results
 
-    Returns: (bool) True if value is a valid sorting key, else False
-    Raises: InvalidSortingMethod
+    Returns:
+        (bool) True if value is a valid sorting key, else False
+
+    Raises:
+        InvalidSortingMethod
 
     """
     isvalid = value in [
@@ -137,8 +142,11 @@ def is_valid_mode(value: str) -> bool:
     Args:
         value (str): mode used to open a file
 
-    Returns: (bool) if mode is supported / valid
-    Raises: InvalidMode
+    Returns:
+        (bool) if mode is supported / valid
+
+    Raises:
+        InvalidMode
 
     """
     accepted_modes = [
@@ -161,7 +169,9 @@ def output_stats(profile, sorting, stream: IO = stdout) -> None:
         sorting (str | pstats.SortKey): method used to sort results
         stream (IO): where to output results
 
-    Returns: (None)
+    Returns:
+        (None) Profile results are sent to designated stream,
+        which is stdout by default.
 
     """
     p = Stats(profile, stream=stream)

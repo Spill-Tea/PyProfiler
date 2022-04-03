@@ -47,34 +47,36 @@ class Profiler:
 
     Example Usage:
 
-        from PyProfiler import Profiler
+        '''python
 
-        @Profiler(keyword='profile')
-        def add(a, b, profile: bool = True):
-            return a + b
+            from PyProfiler import Profiler
 
-        add(1, 2, profile=True)  # is profiled
-        add(1, 2, True) # is profiled
-        add(a=1, b=2, profile=True)  # is profiled
-        add(1, 2, profile=True)  # is profiled
-        add(1, 2, False)  # Not profiled
-        add(1, 2, profile=False)  # Not profiled
-        add(1, 2)  # is profiled
+            @Profiler(keyword='profile')
+            def add(a, b, profile: bool = True):
+                return a + b
 
-        @Profiler(keyword='verbose')
-        def sub(a, b, verbose):
-            return a - b
+            add(1, 2, profile=True)  # is profiled
+            add(1, 2, True) # is profiled
+            add(a=1, b=2, profile=True)  # is profiled
+            add(1, 2, profile=True)  # is profiled
+            add(1, 2, False)  # Not profiled
+            add(1, 2, profile=False)  # Not profiled
+            add(1, 2)  # is profiled
 
-        sub(1, 2, True)  # is profiled
-        sub(1, 2, verbose=True)  # is profiled
+            @Profiler(keyword='verbose')
+            def sub(a, b, verbose):
+                return a - b
 
-        sub(1, 2, False)  # Not profiled
-        sub(1, 2, verbose=False)  # Not profiled
+            sub(1, 2, True)  # is profiled
+            sub(1, 2, verbose=True)  # is profiled
 
-    NOTE: If the defined keyword is not a keyword or positional argument
-    In the wrapped function, the function will proceed normally.
+            sub(1, 2, False)  # Not profiled
+            sub(1, 2, verbose=False)  # Not profiled
+        '''
 
-    NOTE: Profiler wrapper should be in direct contact with function when multiple wrappers are used.
+    Notes:
+        - If the defined keyword is not a keyword or positional argument, the function will behave normally.
+        - When using multiple wrappers, the Profiler wrapper must be the first wrapper.
 
     """
     def __init__(self,
