@@ -27,7 +27,10 @@
 from typing import Any, Callable
 from cProfile import Profile as _Profile
 
-from PyProfiler.utils import check_keyword, is_valid_mode, is_valid_sortkey, output_stats
+from PyProfiler.utils import check_keyword
+from PyProfiler.utils import is_valid_mode
+from PyProfiler.utils import is_valid_sortkey
+from PyProfiler.utils import output_stats
 
 
 class Profiler:
@@ -44,6 +47,8 @@ class Profiler:
         mode (str): Mode used to write to filepath. Options: 'a' | 'ab' | 'at' | 'w' | 'wb' | 'wt'
         sortby (Any): Define how to sort Profiling Results for Visualization. For More Details:
             https://docs.python.org/3/library/profile.html#pstats.Stats.sort_stats
+        kwargs (Any): Additional keyword arguments are supplied to cProfile.Profile class. See:
+            https://docs.python.org/3/library/profile.html#profile.Profile
 
     Example Usage:
 
@@ -84,6 +89,7 @@ class Profiler:
                  filepath: str = None,
                  mode: str = 'a',
                  sortby: Any = 'cumulative',
+                 **kwargs
                  ) -> None:
         # Sanity Checks - Raise errors immediately (not after profiling)
         is_valid_mode(mode)
@@ -93,6 +99,7 @@ class Profiler:
         self.filepath = filepath
         self.mode = mode
         self.sortby = sortby
+        self.kwargs = kwargs
 
     def __call__(self, function: Callable):
         def wrapper(*args, **kwargs):
@@ -103,7 +110,7 @@ class Profiler:
             if self.filepath is None:
                 print(f'Profiling {name}()\n')
 
-            prof = _Profile()
+            prof = _Profile(**self.kwargs)
             ret_val = prof.runcall(function, *args, **kwargs)
 
             if self.filepath is not None:
