@@ -3,6 +3,7 @@
         tests/functions.py
 
 """
+from math import prod
 from PyProfiler import Profiler
 
 
@@ -30,14 +31,22 @@ class Example:
         return a
 
 
-class ExampleProfiled:
-    def __init__(self):
-        pass
+class Math:
+    _n = 1
+
+    def __init__(self, values: list):
+        self.values = values
 
     @Profiler(keyword='verbose')
-    def add(self, *args, verbose=True):
-        return sum(args)
+    def add(self, verbose: bool = True):
+        return sum(self.values)
 
-    @Profiler(keyword='debug')
-    def subtract(self, *args, debug=False):
-        pass
+    @Profiler()
+    def product(self, debug: bool):
+        return prod(self.values)
+
+    @classmethod
+    @Profiler()
+    def new(cls, values: list, debug: bool):
+        cls._n += 1
+        return cls(values)
