@@ -3,36 +3,16 @@
         tests/test_utils.py
 
 """
+# Python Dependencies
 import pytest
 
 from pstats import SortKey
 
 from PyProfiler import get_default_args
-from PyProfiler.utils import is_valid_sortkey, check_keyword, default_arg
+from PyProfiler.errors import InvalidSortingMethod, InvalidMode
+from PyProfiler.utils import is_valid_sortkey, check_keyword, default_arg, is_valid_mode
 
-
-def example(a, b, debug):
-    return a + b
-
-
-def example_2(a: int = 1, b: int = 2, verbose: bool = True):
-    return a + b
-
-
-class Example:
-    def __init__(self):
-        pass
-
-    @classmethod
-    def black(cls, b, debug=False):
-        return b
-
-    def magic(self, a, profile=True):
-        return a
-
-    @staticmethod
-    def lady(a, profile):
-        return a
+from .functions import example, example_2, Example
 
 
 @pytest.mark.parametrize('value, expected', [
@@ -45,7 +25,8 @@ class Example:
     (SortKey.FILENAME, True), ('filename', True), ('module', True),
     (SortKey.LINE, True), ('line', True),
     (SortKey.TIME, True), ('time', True), ('tottime', True),
-    ('INVALID', False), ('file', True),
+    pytest.param("INVALID", False, marks=pytest.mark.xfail(raises=InvalidSortingMethod)),
+    ('file', True),
 ])
 def test_sortkey(value, expected):
     assert is_valid_sortkey(value) is expected
@@ -73,25 +54,25 @@ def test_sortkey(value, expected):
     (example_2, 'verbose', (0, 0), {'verbose': 1}, False),  # Positional Arg is not bool
 
     # Method with Default (True)
-    (Example().magic, 'profile', (0, True), {}, True),  # Positional Arg is True
-    (Example().magic, 'profile', (0,), {}, True),  # Default Value is True
-    (Example().magic, 'profile', (), {}, True),  # Default Value is True
-    (Example().magic, 'profile', (), {'profile': True}, True),  # Keyword Arg is True
+    (Example().magic, 'profile', ('self', 0, True), {}, True),  # Positional Arg is True
+    (Example().magic, 'profile', ('self', 0), {}, True),  # Default Value is True
+    (Example().magic, 'profile', ('self',), {}, True),  # Default Value is True
+    (Example().magic, 'profile', ('self',), {'profile': True}, True),  # Keyword Arg is True
 
-    (Example().magic, 'profile', (), {'profile': False}, False),  # Keyword Arg is False
-    (Example().magic, 'profile', (0, False), {}, False),  # Positional Arg is False
-    (Example().magic, 'wrong', (0, True), {}, False),  # Wong Keyword (Keyword not present)
-    (Example().magic, 'profile', (0, 1), {}, False),  # Positional Arg is not bool
+    (Example().magic, 'profile', ('self',), {'profile': False}, False),  # Keyword Arg is False
+    (Example().magic, 'profile', ('self', 0, False), {}, False),  # Positional Arg is False
+    (Example().magic, 'wrong', ('self', 0, True), {}, False),  # Wong Keyword (Keyword not present)
+    (Example().magic, 'profile', ('self', 0, 1), {}, False),  # Positional Arg is not bool
 
     # Class Method (wrapper) with Default (False)
-    (Example().black, 'debug', (0, True), {}, True),  # Positional Arg is True
-    (Example().black, 'debug', (0, ), {'debug': True}, True),  # Keyword Arg is True
-    (Example().black, 'debug', (0, False), {'debug': True}, True),  # Keyword Arg is True
+    (Example().black, 'debug', ('cls', 0, True), {}, True),  # Positional Arg is True
+    (Example().black, 'debug', ('cls', 0), {'debug': True}, True),  # Keyword Arg is True
+    (Example().black, 'debug', ('cls', 0, False), {'debug': True}, True),  # Keyword Arg is True
 
-    (Example().black, 'debug', (0, False), {}, False),  # Positional Arg is False
-    (Example().black, 'debug', (0, 1), {}, False),  # Positional Arg is not bool
-    (Example().black, 'debug', (0,), {}, False),  # Default Value is False
-    (Example().black, 'debug', (), {'debug': False}, False),  # Keyword Arg is False
+    (Example().black, 'debug', ('cls', 0, False), {}, False),  # Positional Arg is False
+    (Example().black, 'debug', ('cls', 0, 1), {}, False),  # Positional Arg is not bool
+    (Example().black, 'debug', ('cls', 0), {}, False),  # Default Value is False
+    (Example().black, 'debug', ('cls',), {'debug': False}, False),  # Keyword Arg is False
 
     # Static Method (wrapper) without Default Value
     (Example().lady, 'profile', (0, True), {}, True),  # Positional Arg is True
@@ -140,3 +121,17 @@ def test_default_values(function, expected):
 ])
 def test_default_keyvalue(function, keyword, default, expected):
     assert default_arg(function, keyword, default) is expected
+
+
+@pytest.mark.parametrize('value, expected', [
+    ('a', True),
+    ('w', True),
+    ('ab', True),
+    ('wb', True),
+    ('at', True),
+    ('wt', True),
+    pytest.param('r', False, marks=pytest.mark.xfail(raises=InvalidMode)),
+    pytest.param('rb', False, marks=pytest.mark.xfail(raises=InvalidMode))
+])
+def test_mode(value, expected):
+    return is_valid_mode(value) is expected

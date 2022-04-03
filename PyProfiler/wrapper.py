@@ -27,50 +27,54 @@
 from typing import Any, Callable
 from cProfile import Profile as _Profile
 
-from PyProfiler.errors import InvalidMode, InvalidSortingMethod
 from PyProfiler.utils import check_keyword, is_valid_mode, is_valid_sortkey, output_stats
 
 
 class Profiler:
-    """A Simple cProfile Wrapper to debug any Python Function, which is
-    toggled by an argument of the function it wraps. By default, the
-    keyword argument is `debug`, but may be modified according to user
-    specification. If the user defined keyword is an argument in the
-    wrapped function and is set to True (either by default or during use),
-    the function will be profiled (and provide output).
-    Args
-        keyword (str)
-            Keyword (or Positional) Argument to search for in the wrapped function.
-        filepath (str)
-            A path to save output of function profiling. If None, the
-            profile stats are returned to stdout by default.
-        mode (str)
-            Mode used to write to filepath. Common Options: 'a' | 'ab' | 'at' | 'w' | 'wb' | 'wt'
-        sortby (Any)
-            Define how to sort Profiling Results for Visualization.
-            For More Details, review the following available options:
-                https://docs.python.org/3/library/profile.html#pstats.Stats.sort_stats
-    Example Useage
-        >>> from PyProfiler import Profiler
-        >>> @Profiler(keyword='profile')
-        >>> def add(a, b, profile: bool = True):
-        >>>     return a + b
-        >>> add(1, 2, profile=True)  # is profiled
-        >>> add(1, 2, True) # is profiled
-        >>> add(a=1, b=2, profile=True)  # is profiled
-        >>> add(1, 2, profile=True)  # is profiled
-        >>> add(1, 2, False)  # Not profiled
-        >>> add(1, 2, profile=False)  # Not profiled
-        >>> add(1, 2)  # is profiled
-        >>> @Profiler(keyword='verbose')
-        >>> def sub(a, b, verbose):
-        >>>     return a - b
-        >>> sub(1, 2, True)  # is profiled
-        >>> sub(1, 2, verbose=True)  # is profiled
-        >>> sub(1, 2, False)  # Not profiled
-        >>> sub(1, 2, verbose=False)  # Not profiled
+    """A Toggleable cProfile Wrapper to easily debug any Python Function.
+
+    By default, 'debug' is the keyword argument used to toggle cProfile, but the keyword may be
+    modified according to user specification. When, the keyword is set to True, the Function is
+    then Profiled, providing output to the appropriate stream.
+
+    Args:
+        keyword (str): Keyword (or Positional) Argument to search for in the wrapped function.
+        filepath (str): The path to save output of function profiling. If None, the profile stats
+            are returned to stdout by default.
+        mode (str): Mode used to write to filepath. Options: 'a' | 'ab' | 'at' | 'w' | 'wb' | 'wt'
+        sortby (Any): Define how to sort Profiling Results for Visualization. For More Details:
+            https://docs.python.org/3/library/profile.html#pstats.Stats.sort_stats
+
+    Example Usage:
+
+        from PyProfiler import Profiler
+
+        @Profiler(keyword='profile')
+        def add(a, b, profile: bool = True):
+            return a + b
+
+        add(1, 2, profile=True)  # is profiled
+        add(1, 2, True) # is profiled
+        add(a=1, b=2, profile=True)  # is profiled
+        add(1, 2, profile=True)  # is profiled
+        add(1, 2, False)  # Not profiled
+        add(1, 2, profile=False)  # Not profiled
+        add(1, 2)  # is profiled
+
+        @Profiler(keyword='verbose')
+        def sub(a, b, verbose):
+            return a - b
+
+        sub(1, 2, True)  # is profiled
+        sub(1, 2, verbose=True)  # is profiled
+
+        sub(1, 2, False)  # Not profiled
+        sub(1, 2, verbose=False)  # Not profiled
+
     NOTE: If the defined keyword is not a keyword or positional argument
-    NOTE: in the wraped function, the function will proceed normally.
+    In the wrapped function, the function will proceed normally.
+
+    NOTE: Profiler wrapper should be in direct contact with function when multiple wrappers are used.
 
     """
     def __init__(self,
@@ -80,10 +84,8 @@ class Profiler:
                  sortby: Any = 'cumulative',
                  ) -> None:
         # Sanity Checks - Raise errors immediately (not after profiling)
-        if is_valid_mode(mode) is False:
-            raise InvalidMode(f"Invalid Writing Method ({mode}).")
-        if is_valid_sortkey(sortby) is False:
-            raise InvalidSortingMethod(f"Invalid Sorting Method ({sortby}).")
+        is_valid_mode(mode)
+        is_valid_sortkey(sortby)
 
         self.keyword = keyword
         self.filepath = filepath
