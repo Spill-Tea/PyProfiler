@@ -22,16 +22,18 @@ wrapped function and is set to True (either by default or during use),
 the function will be profiled (and provide output).
 
 ## Example
+Here is a simple example of a function which adds two elements.
 ```python
 from PyProfiler import Profiler
 
 @Profiler(keyword='profile', filepath=None, mode='a')
-def add(*args, profile: bool = False):
-    return sum(*args)
+def add(a, b, profile: bool = True):
+    return a + b
 
-add(1, 2, 5, 9, 10) # Function is not Profiled (default is False)
-add(1, 2, 5, 9, 10, profile=False) # Function is not Profiled
-add(1, 2, 5, 9, 10, profile=True)  # Function is Profiled
+print(add(1, 2) == 3)  # Function is Profiled (default is True)
+print(add(1, 2, False) == 3)  # Function is Not Profiled (Positional Argument)
+print(add(1, 2, profile=False) == 3)  # Function is Not Profiled (Keyword Argument)
+
 ```
 
 ## Usage
