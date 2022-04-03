@@ -38,7 +38,10 @@ add(1, 2, 5, 9, 10, profile=True)  # Function is Profiled
 ### Multiple Decorators
 When a function requires multiple decorators, use this Profiler decorator
 as the bottom most layer, since its function depends on introspection of the
-intended method.
+intended method. Currently, the Profiler wrapper is effectively __incompatible
+with the classmethod wrapper__ since instance attributes or methods (of the
+intended class) cannot be accessed.
+
 ```python
 class Example:
     @staticmethod
