@@ -19,7 +19,9 @@ Profiling is toggled by an argument of the function it wraps. By default,
 the keyword argument is `debug`, but may be modified according to user
 specification. If the user defined keyword is an argument in the
 wrapped function and is set to True (either by default or during use),
-the function will be profiled (and provide output).
+the function will be profiled (and provide output). To Use, the wrapper
+must be called (wrapper is return via `__call__` dunder method), even
+when using the default values.
 
 ## Example
 Here is a simple example of a function which adds two elements.
@@ -33,6 +35,11 @@ def add(a, b, profile: bool = True):
 print(add(1, 2) == 3)  # Function is Profiled (default is True)
 print(add(1, 2, False) == 3)  # Function is Not Profiled (Positional Argument)
 print(add(1, 2, profile=False) == 3)  # Function is Not Profiled (Keyword Argument)
+
+
+@Profiler()  # even when using defaults, Profiler must be called to return the wrapper
+def add(debug, *args):
+   return sum(args)
 
 ```
 
