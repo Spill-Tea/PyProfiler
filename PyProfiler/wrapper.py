@@ -27,10 +27,11 @@
 from typing import Any, Callable
 from cProfile import Profile as _Profile
 
+from PyProfiler.utils import MODE
+from PyProfiler.utils import Statistics
 from PyProfiler.utils import check_keyword
 from PyProfiler.utils import is_valid_mode
 from PyProfiler.utils import is_valid_sortkey
-from PyProfiler.utils import output_stats
 
 
 class Profiler:
@@ -44,7 +45,7 @@ class Profiler:
         keyword (str): Keyword (or Positional) Argument to search for in the wrapped function.
         filepath (str): The path to save output of function profiling. If None, the profile stats
             are returned to stdout by default.
-        mode (str): Mode used to write to filepath. Options: 'a' | 'ab' | 'at' | 'w' | 'wb' | 'wt'
+        mode (MODE): Mode used to write to filepath. Options: 'a' | 'ab' | 'at' | 'w' | 'wb' | 'wt'
         sortby (Any): Define how to sort Profiling Results for Visualization. For More Details:
             https://docs.python.org/3/library/profile.html#pstats.Stats.sort_stats
         kwargs (Any): Additional keyword arguments are supplied to cProfile.Profile class. See:
@@ -86,8 +87,8 @@ class Profiler:
     """
     def __init__(self,
                  keyword: str = 'debug',
-                 filepath: str = None,
-                 mode: str = 'a',
+                 filepath: Any = None,
+                 mode: MODE = 'a',
                  sortby: Any = 'cumulative',
                  **kwargs
                  ) -> None:
@@ -96,9 +97,11 @@ class Profiler:
         is_valid_sortkey(sortby)
 
         self.keyword = keyword
-        self.filepath = filepath
-        self.mode = mode
-        self.sortby = sortby
+        self._stream = Statistics(
+            stream=filepath,
+            mode=mode,
+            sortby=sortby
+        )
         self.kwargs = kwargs
 
     def __call__(self, function: Callable):
@@ -106,19 +109,9 @@ class Profiler:
             if not check_keyword(function, self.keyword, *args, **kwargs):
                 return function(*args, **kwargs)
 
-            name = function.__qualname__
-            if self.filepath is None:
-                print(f'Profiling {name}()\n')
-
             prof = _Profile(**self.kwargs)
             ret_val = prof.runcall(function, *args, **kwargs)
-
-            if self.filepath is not None:
-                with open(self.filepath, self.mode) as f:
-                    f.write(f'Profiling {name}()\n')
-                    output_stats(prof, self.sortby, f)
-            else:
-                output_stats(prof, self.sortby)
+            self._stream.output(prof, function.__qualname__)
 
             return ret_val
 
