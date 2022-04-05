@@ -4,7 +4,12 @@
 
 """
 from math import prod
+from io import StringIO
+
 from PyProfiler import Profiler
+
+# Globals
+STREAM = StringIO()
 
 
 def example(a, b, debug):
@@ -37,16 +42,21 @@ class Math:
     def __init__(self, values: list):
         self.values = values
 
-    @Profiler(keyword='verbose')
+    @Profiler(keyword='verbose', filepath=STREAM)
     def add(self, verbose: bool = True):
         return sum(self.values)
 
-    @Profiler()
+    @Profiler(filepath=STREAM)
     def product(self, debug: bool):
         return prod(self.values)
 
     @classmethod
-    @Profiler()
+    @Profiler(filepath=STREAM)
     def new(cls, values: list, debug: bool):
         cls._n += 1
         return cls(values)
+
+
+@Profiler(keyword='verbose', filepath=STREAM)
+def addition(values, verbose: bool = True):
+    return sum(values)
