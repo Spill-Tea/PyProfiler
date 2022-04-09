@@ -1,5 +1,6 @@
 """
     PyProfiler/utils.py
+
     MIT License
 
     Copyright (c) 2022 Spill-Tea
@@ -24,14 +25,25 @@
 
 """
 # Python Dependencies
-from sys import stdout, stderr
-from pstats import SortKey, Stats
-from typing import Any, Callable, IO
+from io import IOBase
+from io import FileIO
+from io import BytesIO
+from io import StringIO
+from sys import stdout
+from sys import stderr
+from pstats import Stats
+from pstats import SortKey
 
 from inspect import Parameter
-from inspect import getfullargspec, signature
+from inspect import signature
+from inspect import getfullargspec
+from typing import Any, Callable, IO, Literal, Union
 
 from .errors import InvalidSortingMethod, InvalidMode
+
+
+# Globals
+MODE = Literal['a', 'ab', 'at', 'w', 'wb', 'wt']
 
 
 def get_default_args(function: Callable, default: Any) -> dict:
@@ -41,8 +53,8 @@ def get_default_args(function: Callable, default: Any) -> dict:
         function (Callable): A function to inspect
         default (Any): Define a Default Value when none exists
 
-    Returns (dict):
-        A Dictionary of {args: default value} of a given function.
+    Returns:
+        (dict) A Dictionary of {arg name: arg default value} of a given function.
 
     """
     d = signature(function).parameters.items()
@@ -55,8 +67,8 @@ def default_arg(function: Callable, keyword: str, default: Any = None) -> Any:
         function (Callable): A function to inspect
         keyword (str): keyword argument to find.
         default (Any): Define a Default Value when none exists
-    Returns (Any):
-        The default value of a given keyword, from the specified function.
+    Returns:
+        (Any) The default value of a given keyword, from the specified function.
 
     NOTE: If the function does not have a given keyword argument, the default value is returned.
 
@@ -72,7 +84,6 @@ def default_arg(function: Callable, keyword: str, default: Any = None) -> Any:
 
 def check_keyword(function: Callable, keyword: str, *args, **kwargs):
     """Retrieves the value of a keyword of an intercepted function.
-    NOTE: Assumes keyword value should be a boolean (toggle).
 
     Args:
         function (Callable): a callable function
@@ -80,9 +91,12 @@ def check_keyword(function: Callable, keyword: str, *args, **kwargs):
         args (tuple): Positional argument values delivered to function
         kwargs (dict): Keyword argument values delivered to function
 
-    Returns (bool | Any):
-        the bool toggle of a specific keyword if present in function.
-        NOTE: If keyword is not present as a valid argument of the function, returns False
+    Returns:
+        (bool | Any) the bool toggle of a specific keyword if present in function.
+
+    Notes:
+        - If keyword is not present as a valid argument of the function, returns False
+        - Assumes the keyword value should be a boolean (toggle).
 
     """
     specs = getfullargspec(function)
@@ -114,39 +128,42 @@ def is_valid_sortkey(value: Any) -> bool:
     """Tests if the value is a valid Sorting Method accepted by cProfile and pstats Stats libraries.
 
     Args:
-        value: (str | pstats.SortKey)
+        value (str | pstats.SortKey): method used to sort profile results
 
-    Returns: (bool) True if value is a valid sorting key, else False
-    Raises: InvalidSortingMethod
+    Returns:
+        (bool) True if value is a valid sorting key, else False
+
+    Raises:
+        InvalidSortingMethod
 
     """
     isvalid = value in [
+        *[i for i in SortKey],
         'calls', 'cumtime', 'cumulative', 'file', 'filename', 'line', 'module',
-        'name', 'ncalls', 'nfl', 'pcalls', 'stdname', 'time', 'tottime'
+        'name', 'ncalls', 'nfl', 'pcalls', 'stdname', 'time', 'tottime',
     ]
 
-    try:
-        return isvalid or value in SortKey
-    except TypeError:
+    if not isvalid:
         raise InvalidSortingMethod(f"Invalid Sorting Method: {value}.")
 
+    return isvalid
 
-def is_valid_mode(value: str) -> bool:
+
+def is_valid_mode(value: MODE) -> bool:
     """Test if the value is a valid File Opening Mode.
 
     Args:
-        value (str): mode used to open a file
+        value (MODE): mode used to open a file
 
-    Returns: (bool) if mode is supported / valid
-    Raises: InvalidMode
+    Returns:
+        (bool) if mode is supported / valid
+
+    Raises:
+        InvalidMode
 
     """
-    accepted_modes = [
-        'w', 'w+', 'wb', 'bw', 'w+b', 'bw+', 'wt', 'tw', 'w+t', 'tw+',
-        'a', 'a+', 'ab', 'ba', 'a+b', 'ba+', 'at', 'ta', 'a+t', 'ta+',
-        ]
+    is_valid = value in ['a', 'ab', 'at', 'w', 'wb', 'wt']
 
-    is_valid = value in accepted_modes
     if is_valid is False:
         raise InvalidMode(f"Invalid Writing Method: ({value}).")
 
@@ -159,11 +176,42 @@ def output_stats(profile, sorting, stream: IO = stdout) -> None:
     Args:
         profile (cProfile.Profile): profile class containing results
         sorting (str | pstats.SortKey): method used to sort results
-        stream (IO): where to output results
+        stream (IO): where to output results (stdout by default)
 
-    Returns: (None)
+    Returns:
+        (None) Profile results are sent to designated stream,
+        which is stdout by default.
 
     """
     p = Stats(profile, stream=stream)
     p.sort_stats(sorting)
     p.print_stats()
+
+
+class Statistics:
+    __slots__ = ('stream', 'mode', 'sortby', 'output')
+
+    def __init__(self,
+                 stream: Union[str, StringIO, FileIO, BytesIO],
+                 mode: MODE,
+                 sortby: Any,
+                 ):
+        self.stream = stream or stdout
+        self.mode = mode
+        self.sortby = sortby
+
+        if issubclass(self.stream.__class__, IOBase):
+            self.output = self._write_it
+        elif issubclass(self.stream.__class__, str):
+            self.output = self._open_file
+        else:
+            raise ValueError(f"Invalid Stream or Filepath: {self.stream}")
+
+    def _open_file(self, profile, name: str):
+        with open(self.stream, self.mode) as f:
+            f.write(f'Profiling {name}()\n')
+            output_stats(profile, self.sortby, f)
+
+    def _write_it(self, profile, name: str):
+        self.stream.write(f'Profiling {name}()\n')
+        output_stats(profile, self.sortby, self.stream)

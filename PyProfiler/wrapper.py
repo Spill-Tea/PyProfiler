@@ -1,5 +1,6 @@
 """
     PyProfiler/Wrapper.py
+
     MIT License
 
     Copyright (c) 2022 Spill-Tea
@@ -27,7 +28,11 @@
 from typing import Any, Callable
 from cProfile import Profile as _Profile
 
-from PyProfiler.utils import check_keyword, is_valid_mode, is_valid_sortkey, output_stats
+from PyProfiler.utils import MODE
+from PyProfiler.utils import Statistics
+from PyProfiler.utils import check_keyword
+from PyProfiler.utils import is_valid_mode
+from PyProfiler.utils import is_valid_sortkey
 
 
 class Profiler:
@@ -41,75 +46,75 @@ class Profiler:
         keyword (str): Keyword (or Positional) Argument to search for in the wrapped function.
         filepath (str): The path to save output of function profiling. If None, the profile stats
             are returned to stdout by default.
-        mode (str): Mode used to write to filepath. Options: 'a' | 'ab' | 'at' | 'w' | 'wb' | 'wt'
+        mode (MODE): Mode used to write to filepath. Options: 'a' | 'ab' | 'at' | 'w' | 'wb' | 'wt'
         sortby (Any): Define how to sort Profiling Results for Visualization. For More Details:
             https://docs.python.org/3/library/profile.html#pstats.Stats.sort_stats
+        kwargs (Any): Additional keyword arguments are supplied to cProfile.Profile class. See:
+            https://docs.python.org/3/library/profile.html#profile.Profile
 
     Example Usage:
 
-        from PyProfiler import Profiler
+        '''python
 
-        @Profiler(keyword='profile')
-        def add(a, b, profile: bool = True):
-            return a + b
+            from PyProfiler import Profiler
 
-        add(1, 2, profile=True)  # is profiled
-        add(1, 2, True) # is profiled
-        add(a=1, b=2, profile=True)  # is profiled
-        add(1, 2, profile=True)  # is profiled
-        add(1, 2, False)  # Not profiled
-        add(1, 2, profile=False)  # Not profiled
-        add(1, 2)  # is profiled
+            @Profiler(keyword='profile')
+            def add(a, b, profile: bool = True):
+                return a + b
 
-        @Profiler(keyword='verbose')
-        def sub(a, b, verbose):
-            return a - b
+            add(1, 2, profile=True)  # is profiled
+            add(1, 2, True) # is profiled
+            add(a=1, b=2, profile=True)  # is profiled
+            add(1, 2, profile=True)  # is profiled
+            add(1, 2, False)  # Not profiled
+            add(1, 2, profile=False)  # Not profiled
+            add(1, 2)  # is profiled
 
-        sub(1, 2, True)  # is profiled
-        sub(1, 2, verbose=True)  # is profiled
+            @Profiler(keyword='verbose')
+            def sub(a, b, verbose):
+                return a - b
 
-        sub(1, 2, False)  # Not profiled
-        sub(1, 2, verbose=False)  # Not profiled
+            sub(1, 2, True)  # is profiled
+            sub(1, 2, verbose=True)  # is profiled
 
-    NOTE: If the defined keyword is not a keyword or positional argument
-    In the wrapped function, the function will proceed normally.
+            sub(1, 2, False)  # Not profiled
+            sub(1, 2, verbose=False)  # Not profiled
+        '''
 
-    NOTE: Profiler wrapper should be in direct contact with function when multiple wrappers are used.
+    Notes:
+        - If the defined keyword is not a keyword or positional argument, the function will behave normally.
+        - When using multiple wrappers, the Profiler wrapper must be the first wrapper.
 
     """
+    __slots__ = ("keyword", "_stream", "kwargs")
+
     def __init__(self,
                  keyword: str = 'debug',
-                 filepath: str = None,
-                 mode: str = 'a',
+                 filepath: Any = None,
+                 mode: MODE = 'a',
                  sortby: Any = 'cumulative',
+                 **kwargs
                  ) -> None:
         # Sanity Checks - Raise errors immediately (not after profiling)
         is_valid_mode(mode)
         is_valid_sortkey(sortby)
 
         self.keyword = keyword
-        self.filepath = filepath
-        self.mode = mode
-        self.sortby = sortby
+        self._stream = Statistics(
+            stream=filepath,
+            mode=mode,
+            sortby=sortby
+        )
+        self.kwargs = kwargs
 
     def __call__(self, function: Callable):
         def wrapper(*args, **kwargs):
             if not check_keyword(function, self.keyword, *args, **kwargs):
                 return function(*args, **kwargs)
 
-            name = function.__qualname__
-            if self.filepath is None:
-                print(f'Profiling {name}()\n')
-
-            prof = _Profile()
+            prof = _Profile(**self.kwargs)
             ret_val = prof.runcall(function, *args, **kwargs)
-
-            if self.filepath is not None:
-                with open(self.filepath, self.mode) as f:
-                    f.write(f'Profiling {name}()\n')
-                    output_stats(prof, self.sortby, f)
-            else:
-                output_stats(prof, self.sortby)
+            self._stream.output(prof, function.__qualname__)
 
             return ret_val
 

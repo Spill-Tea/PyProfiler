@@ -9,10 +9,16 @@ import pytest
 from pstats import SortKey
 
 from PyProfiler import get_default_args
-from PyProfiler.errors import InvalidSortingMethod, InvalidMode
-from PyProfiler.utils import is_valid_sortkey, check_keyword, default_arg, is_valid_mode
+from PyProfiler.utils import default_arg
+from PyProfiler.utils import check_keyword
+from PyProfiler.utils import is_valid_mode
+from PyProfiler.utils import is_valid_sortkey
+from PyProfiler.errors import InvalidMode
+from PyProfiler.errors import InvalidSortingMethod
 
-from .functions import example, example_2, Example
+from .functions import example
+from .functions import example_2
+from .functions import Example
 
 
 @pytest.mark.parametrize('value, expected', [
