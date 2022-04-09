@@ -1,5 +1,6 @@
 """
     PyProfiler/Wrapper.py
+
     MIT License
 
     Copyright (c) 2022 Spill-Tea
@@ -85,6 +86,8 @@ class Profiler:
         - When using multiple wrappers, the Profiler wrapper must be the first wrapper.
 
     """
+    __slots__ = ("keyword", "_stream", "kwargs")
+
     def __init__(self,
                  keyword: str = 'debug',
                  filepath: Any = None,

@@ -1,5 +1,6 @@
 """
     PyProfiler/utils.py
+
     MIT License
 
     Copyright (c) 2022 Spill-Tea
@@ -34,7 +35,8 @@ from pstats import Stats
 from pstats import SortKey
 
 from inspect import Parameter
-from inspect import getfullargspec, signature
+from inspect import signature
+from inspect import getfullargspec
 from typing import Any, Callable, IO, Literal, Union
 
 from .errors import InvalidSortingMethod, InvalidMode

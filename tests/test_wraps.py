@@ -82,5 +82,5 @@ def test_stream(cls, name, kwd, k_val, value, expect):
         assert 'Ordered by: cumulative time' in output
         assert 'ncalls  tottime  percall  cumtime  percall filename:lineno(function)' in output
     else:
-        # Nothing is output to the stream if function is not
+        # Nothing is output to the stream if function is not profiled
         assert output == ''

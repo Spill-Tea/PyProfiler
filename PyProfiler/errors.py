@@ -1,5 +1,6 @@
 """
     PyProfiler/errors.py
+
     MIT License
 
     Copyright (c) 2022 Spill-Tea
