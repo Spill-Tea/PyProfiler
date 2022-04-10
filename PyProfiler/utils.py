@@ -200,7 +200,7 @@ class Statistics:
         self.mode = mode
         self.sortby = sortby
 
-        if issubclass(self.stream.__class__, IOBase):
+        if issubclass(self.stream.__class__, (IOBase, StringIO, FileIO, BytesIO)):
             self.output = self._write_it
         elif issubclass(self.stream.__class__, str):
             self.output = self._open_file
