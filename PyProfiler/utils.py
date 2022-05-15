@@ -42,7 +42,7 @@ from .errors import InvalidSortingMethod, InvalidMode
 
 
 # Globals
-MODE = Literal['a', 'ab', 'at', 'w', 'wb', 'wt']
+MODE = Literal["a", "ab", "at", "w", "wb", "wt"]
 
 
 def get_default_args(function: Callable, default: Any) -> dict:
@@ -106,7 +106,7 @@ def check_keyword(function: Callable, keyword: str, *args, **kwargs):
         return False
 
     # If function comes from a class, eliminate the first arg name and value
-    if specs.args[0] in ['self', 'cls']:
+    if specs.args[0] in ["self", "cls"]:
         positional_args = dict(zip(specs.args[1:], args[1:]))
     else:
         positional_args = dict(zip(specs.args, args))
@@ -138,8 +138,8 @@ def is_valid_sortkey(value: Any) -> bool:
     """
     isvalid = value in [
         *[i for i in SortKey],
-        'calls', 'cumtime', 'cumulative', 'file', 'filename', 'line', 'module',
-        'name', 'ncalls', 'nfl', 'pcalls', 'stdname', 'time', 'tottime',
+        "calls", "cumtime", "cumulative", "file", "filename", "line", "module",
+        "name", "ncalls", "nfl", "pcalls", "stdname", "time", "tottime",
     ]
 
     if not isvalid:
@@ -161,7 +161,7 @@ def is_valid_mode(value: MODE) -> bool:
         InvalidMode
 
     """
-    is_valid = value in ['a', 'ab', 'at', 'w', 'wb', 'wt']
+    is_valid = value in ["a", "ab", "at", "w", "wb", "wt"]
 
     if is_valid is False:
         raise InvalidMode(f"Invalid Writing Method: ({value}).")
@@ -188,7 +188,7 @@ def output_stats(profile, sorting, stream: IO = stdout) -> None:
 
 
 class Statistics:
-    __slots__ = ('stream', 'mode', 'sortby', 'output')
+    __slots__ = ("stream", "mode", "sortby", "output")
 
     def __init__(self,
                  stream: Union[str, StringIO, FileIO, BytesIO],
@@ -208,9 +208,9 @@ class Statistics:
 
     def _open_file(self, profile, name: str):
         with open(self.stream, self.mode) as f:
-            f.write(f'Profiling {name}()\n')
+            f.write(f"Profiling {name}()\n")
             output_stats(profile, self.sortby, f)
 
     def _write_it(self, profile, name: str):
-        self.stream.write(f'Profiling {name}()\n')
+        self.stream.write(f"Profiling {name}()\n")
         output_stats(profile, self.sortby, self.stream)
