@@ -36,6 +36,7 @@ from pstats import SortKey
 from inspect import Parameter
 from inspect import signature
 from inspect import getfullargspec
+from inspect import ismethod
 from typing import Any, Callable, IO, Literal, Union
 
 from .errors import InvalidSortingMethod, InvalidMode
@@ -106,7 +107,7 @@ def check_keyword(function: Callable, keyword: str, *args, **kwargs):
         return False
 
     # If function comes from a class, eliminate the first arg name and value
-    if specs.args[0] in ["self", "cls"]:
+    if ismethod(function):
         positional_args = dict(zip(specs.args[1:], args[1:]))
     else:
         positional_args = dict(zip(specs.args, args))
