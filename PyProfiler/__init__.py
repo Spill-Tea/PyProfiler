@@ -23,8 +23,8 @@
     PyProfiler
 
 """
-from .wrapper import Profiler
-from .utils import get_default_args
+from .wrapper import Profiler  # noqa
+from .utils import get_default_args  # noqa
 
 
 __all__ = [i for i in dir() if not i.startswith('_')]

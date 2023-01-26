@@ -139,4 +139,4 @@ def test_default_keyvalue(function, keyword, default, expected):
     pytest.param("rb", False, marks=pytest.mark.xfail(raises=InvalidMode))
 ])
 def test_mode(value, expected):
-    return is_valid_mode(value) is expected
+    assert is_valid_mode(value) is expected
