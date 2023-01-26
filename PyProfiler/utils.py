@@ -1,27 +1,26 @@
+# MIT License
+#
+# Copyright (c) 2022 Spill-Tea
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 """
     PyProfiler/utils.py
-
-    MIT License
-
-    Copyright (c) 2022 Spill-Tea
-
-    Permission is hereby granted, free of charge, to any person obtaining a copy
-    of this software and associated documentation files (the "Software"), to deal
-    in the Software without restriction, including without limitation the rights
-    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-    copies of the Software, and to permit persons to whom the Software is
-    furnished to do so, subject to the following conditions:
-
-    The above copyright notice and this permission notice shall be included in all
-    copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-    SOFTWARE.
 
 """
 # Python Dependencies
@@ -37,13 +36,14 @@ from pstats import SortKey
 from inspect import Parameter
 from inspect import signature
 from inspect import getfullargspec
+from inspect import ismethod
 from typing import Any, Callable, IO, Literal, Union
 
 from .errors import InvalidSortingMethod, InvalidMode
 
 
 # Globals
-MODE = Literal['a', 'ab', 'at', 'w', 'wb', 'wt']
+MODE = Literal["a", "ab", "at", "w", "wb", "wt"]
 
 
 def get_default_args(function: Callable, default: Any) -> dict:
@@ -107,7 +107,7 @@ def check_keyword(function: Callable, keyword: str, *args, **kwargs):
         return False
 
     # If function comes from a class, eliminate the first arg name and value
-    if specs.args[0] in ['self', 'cls']:
+    if ismethod(function):
         positional_args = dict(zip(specs.args[1:], args[1:]))
     else:
         positional_args = dict(zip(specs.args, args))
@@ -139,8 +139,8 @@ def is_valid_sortkey(value: Any) -> bool:
     """
     isvalid = value in [
         *[i for i in SortKey],
-        'calls', 'cumtime', 'cumulative', 'file', 'filename', 'line', 'module',
-        'name', 'ncalls', 'nfl', 'pcalls', 'stdname', 'time', 'tottime',
+        "calls", "cumtime", "cumulative", "file", "filename", "line", "module",
+        "name", "ncalls", "nfl", "pcalls", "stdname", "time", "tottime",
     ]
 
     if not isvalid:
@@ -162,7 +162,7 @@ def is_valid_mode(value: MODE) -> bool:
         InvalidMode
 
     """
-    is_valid = value in ['a', 'ab', 'at', 'w', 'wb', 'wt']
+    is_valid = value in ["a", "ab", "at", "w", "wb", "wt"]
 
     if is_valid is False:
         raise InvalidMode(f"Invalid Writing Method: ({value}).")
@@ -189,7 +189,7 @@ def output_stats(profile, sorting, stream: IO = stdout) -> None:
 
 
 class Statistics:
-    __slots__ = ('stream', 'mode', 'sortby', 'output')
+    __slots__ = ("stream", "mode", "sortby", "output")
 
     def __init__(self,
                  stream: Union[str, StringIO, FileIO, BytesIO],
@@ -200,7 +200,7 @@ class Statistics:
         self.mode = mode
         self.sortby = sortby
 
-        if issubclass(self.stream.__class__, IOBase):
+        if issubclass(self.stream.__class__, (IOBase, StringIO, FileIO, BytesIO)):
             self.output = self._write_it
         elif issubclass(self.stream.__class__, str):
             self.output = self._open_file
@@ -209,9 +209,9 @@ class Statistics:
 
     def _open_file(self, profile, name: str):
         with open(self.stream, self.mode) as f:
-            f.write(f'Profiling {name}()\n')
+            f.write(f"Profiling {name}()\n")
             output_stats(profile, self.sortby, f)
 
     def _write_it(self, profile, name: str):
-        self.stream.write(f'Profiling {name}()\n')
+        self.stream.write(f"Profiling {name}()\n")
         output_stats(profile, self.sortby, self.stream)
