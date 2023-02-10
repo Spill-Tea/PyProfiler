@@ -24,14 +24,10 @@
 
 """
 # Python Dependencies
-from typing import Any, Callable
+from typing import Any, Callable, Optional
 from cProfile import Profile as _Profile
 
-from .utils import MODE
-from .utils import Statistics
-from .utils import check_keyword
-from .utils import is_valid_mode
-from .utils import is_valid_sortkey
+from . import utils
 
 
 class Profiler:
@@ -89,17 +85,17 @@ class Profiler:
 
     def __init__(self,
                  keyword: str = "debug",
-                 filepath: Any = None,
-                 mode: MODE = "a",
+                 filepath: Optional[Any] = None,
+                 mode: utils.MODE = "a",
                  sortby: Any = "cumulative",
                  **kwargs
                  ) -> None:
         # Sanity Checks - Raise errors immediately (not after profiling)
-        is_valid_mode(mode)
-        is_valid_sortkey(sortby)
+        utils.is_valid_mode(mode)
+        utils.is_valid_sortkey(sortby)
 
         self.keyword = keyword
-        self._stream = Statistics(
+        self._stream = utils.Statistics(
             stream=filepath,
             mode=mode,
             sortby=sortby
@@ -108,7 +104,7 @@ class Profiler:
 
     def __call__(self, function: Callable):
         def wrapper(*args, **kwargs):
-            if not check_keyword(function, self.keyword, *args, **kwargs):
+            if not utils.check_keyword(function, self.keyword, *args, **kwargs):
                 return function(*args, **kwargs)
 
             prof = _Profile(**self.kwargs)
