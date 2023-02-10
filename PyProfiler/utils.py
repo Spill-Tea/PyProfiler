@@ -63,14 +63,17 @@ def get_default_args(function: Callable, default: Any) -> dict:
 
 def default_arg(function: Callable, keyword: str, default: Any = None) -> Any:
     """Retrieves the Default Value of the Specified Keyword Argument if present.
+
     Args:
         function (Callable): A function to inspect
         keyword (str): keyword argument to find.
         default (Any): Define a Default Value when none exists
+
     Returns:
         (Any) The default value of a given keyword, from the specified function.
 
-    NOTE: If the function does not have a given keyword argument, the default value is returned.
+    Notes:
+        If the function does not have a given keyword argument, the default value is returned.
 
     """
     try:
