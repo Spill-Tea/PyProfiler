@@ -44,7 +44,7 @@ def test_sortkey(value, expected):
 
     (example, "debug", (0, 0, False), {}, False),  # Positional Arg is False
     (example, "debug", (), {}, False),  # No Default Value Specified
-    (example, "verbose", (), {"verbose": True}, False),  # Wong Keyword (Keyword not present)
+    (example, "verbose", (), {"verbose": True}, False),  # Wrong Keyword (Keyword not present)
     (example, "debug", (), {"debug": False}, False),  # Keyword Arg is False
 
     # Function with Default Value (True)
@@ -53,7 +53,7 @@ def test_sortkey(value, expected):
 
     (example_2, "verbose", (), {"verbose": False}, False),  # Keyword Arg is False
     (example_2, "verbose", (0, 0, False), {}, False),  # Positional Arg is False
-    (example_2, "debug", (0, 0, True), {}, False),  # Wong Keyword (Keyword not present)
+    (example_2, "debug", (0, 0, True), {}, False),  # Wrong Keyword (Keyword not present)
     (example_2, "verbose", (0, 0, 1), {}, False),  # Positional Arg is not bool
     (example_2, "verbose", (0, 0), {"verbose": False}, False),  # Keyword Arg is False
     (example_2, "verbose", (0, 0), {"verbose": 1}, False),  # Positional Arg is not bool
@@ -66,7 +66,7 @@ def test_sortkey(value, expected):
 
     (Example().magic, "profile", ("self",), {"profile": False}, False),  # Keyword Arg is False
     (Example().magic, "profile", ("self", 0, False), {}, False),  # Positional Arg is False
-    (Example().magic, "wrong", ("self", 0, True), {}, False),  # Wong Keyword (Keyword not present)
+    (Example().magic, "wrong", ("self", 0, True), {}, False),  # Wrong Keyword (Keyword not present)
     (Example().magic, "profile", ("self", 0, 1), {}, False),  # Positional Arg is not bool
 
     # Class Method (wrapper) with Default (False)
